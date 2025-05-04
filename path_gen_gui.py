@@ -5,9 +5,9 @@ window = Tk()
 window.title("Random Password Generator")
 window.geometry("800x500")
 window.resizable(False, False)
-window.configure(bg='lightblue')
+# window.configure(bg='lightblue')
 
-pass_label = Label(window, text="Your password: ")
+pass_label = Label(window, text="Your password: ", font=("Banhschrift", 10))
 pass_label.pack(side=BOTTOM)
 
 def istEntry():
@@ -22,22 +22,26 @@ def istEntry():
         st_text2.pack_forget()
         st_option.pack_forget()
     
-        
 def passwordGen(length, isc, ist, selected_position, term):
+    # conditional code for "error" involving password lengths above 30
     if length > 30:
         pass_label.configure(text="Password length is greater than 30. Please choose another length.")
         return
     else:
-        if ist and selected_position == "START":
+        if ist and selected_position == "START": # include conditional statement for password length and term length comparison
             length -= len(term)
             # If special chars...
             if isc:
                 password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
             # If no special chars...
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+            else:
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
             
             final_pass = term + password
-            print(final_pass)
+            # if len(final_pass) > length:
+            #     pass_label.configure(text="Term length cannot be longer than password length.")
+            #     return
+            print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             return final_pass
         
@@ -45,20 +49,25 @@ def passwordGen(length, isc, ist, selected_position, term):
             length -= len(term)
             if isc:
                 password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+            else:
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
             
             final_pass = password + term
-            print(final_pass)
+            if len(final_pass) > length:
+                pass_label.configure(text="Term length cannot be longer than password length.")
+                return
+            print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             return final_pass
     
     # If there is no specific term, check for special chars...
     if isc:
         password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
-    password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    else:
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     
     pass_label.configure(text=("Your password: " + password))
-    print(password)
+    print(password) # debug print
     return password
 
 positions = ["START", "END"]
@@ -69,7 +78,7 @@ Label(window, text="Password Length (up to 30): ", font=("Bahnschrift", 17)).pac
 # Enter here...
 
 length = IntVar()
-pass_len = Entry(window, width=5, textvariable=length)
+pass_len = Entry(window, width=5, textvariable=length, font = 20)
 pass_len.pack(side=TOP)
 
 # Include special characters? Checkbox...
@@ -85,7 +94,7 @@ icl_terms.pack(side=TOP)
 # Entry window for when box is checked...
 st_text = Label(window, text="Enter term below:", font=("Bahnschrift", 15))
 term = StringVar()
-st_entry = Entry(window, width=15, textvariable=term)
+st_entry = Entry(window, width=15, textvariable=term, font = 20)
 
 # Positions...
 selected_position = StringVar()
@@ -101,5 +110,9 @@ st_option.pack_forget()
 # Generate button...
 button = Button(window, text="Generate", fg="green", command=lambda: passwordGen(length.get(), isc.get(), ist.get(), selected_position.get(), term.get()))
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
+
+# Credits...
+
+Label(window, text="Credits: Steven Lau and Paul Basile", font=("Bahnschrift", 10)).pack(side=BOTTOM)
 
 window.mainloop()
