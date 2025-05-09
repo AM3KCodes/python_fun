@@ -91,9 +91,7 @@ def passwordGen(length, isc, ist, selected_position, term):
            
             final_pass = password + term
             last_password = final_pass
-            if len(term) > length:
-                pass_label.configure(text="Term length cannot be longer than password length.")
-                return
+
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
