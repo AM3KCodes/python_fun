@@ -2,6 +2,12 @@ from tkinter import *
 import string, random
 import json
 
+# global variables
+
+password_generated = False
+
+# functions
+
 def istEntry():
     if ist.get() == True:
         st_text.pack(side=TOP)
@@ -20,6 +26,8 @@ def copy_to_clipboard(final_pass):
     window.update()
     
 def passwordGen(length, isc, ist, selected_position, term):
+    global password_generated
+    global last_password
     # conditional code for "error" involving password lengths above 30
     if length > 30:
         pass_label.configure(text="Password length is greater than 30. Please choose another length.")
@@ -38,11 +46,14 @@ def passwordGen(length, isc, ist, selected_position, term):
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
             
             final_pass = term + password
+            last_password = final_pass
             # if len(final_pass) > length:
             #     pass_label.configure(text="Term length cannot be longer than password length.")
             #     return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
+            if final_pass:
+                password_generated = True
             copy_to_clipboard(final_pass)
             return final_pass
         
@@ -50,15 +61,20 @@ def passwordGen(length, isc, ist, selected_position, term):
             length -= len(term)
             if isc:
                 password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
+                last_password = password
             else:
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+                last_password = password
             
             final_pass = password + term
+            last_password = final_pass
             if len(term) > length:
                 pass_label.configure(text="Term length cannot be longer than password length.")
                 return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
+            if final_pass:
+                password_generated = True            
             copy_to_clipboard(final_pass)
             return final_pass
     
@@ -69,27 +85,69 @@ def passwordGen(length, isc, ist, selected_position, term):
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     
     pass_label.configure(text=("Your password: " + password + " | Copied to clipboard!"))
+    if password:
+        password_generated = True
     print(password) # debug print
     copy_to_clipboard(password)
     return password
 
+def save(file, save_alert):
+    if (password_generated == True):
+        
+        data = {
+            "length":length.get(),
+            "included_special_characters":isc.get(),
+            "included_specific_terms":ist.get(),
+            "position_of_term":selected_position.get(),
+            "specific_term":term.get(),
+            "password":str(last_password)
+        }
+        path = str(file) + ".json"
+        with open(path, 'w') as save_data:
+            json.dump(data, save_data, indent=4)
+        if save_alert:
+            save_alert.configure(text=f"Password has been saved to {path}.")
+            save_alert.pack(side=BOTTOM)
+            save_alert.after(5000, lambda: save_alert.destroy())
+
+# main window
 
 window = Tk()
-Label(window, text="By: Steven Lau, Paul Basile", font=("Bahnschrift", 7)).pack(side=TOP)
+Label(window, text="By: Steven Lau and Paul Basile", font=("Bahnschrift", 7)).pack(side=TOP)
 
 window.title("Random Password Generator")
 window.geometry("800x500")
 window.resizable(False, False)
 # window.configure(bg='lightblue')
 
-pass_label = Label(window, text="Your password: ", font=("Banhschrift", 10))
+# save window
+
+save_window = Toplevel()
+save_window.title("Save")
+save_window.geometry("300x200")
+save_window.resizable(False,False)
+save_window.withdraw()
+save_window.protocol("WM_DELETE_WINDOW", save_window.withdraw)
+
+# save window elements
+
+file = StringVar()
+Label(save_window, text="Enter file name: ").pack(side=TOP)
+save_alert = Label(save_window, text="", font=("Bahnschrift", 7))
+save_alert.pack(side=TOP)
+Entry(save_window, width=10, textvariable=file, font = ("Bahnschrift", 15)).pack(side=TOP)
+Button(save_window, text="Save", fg="aquamarine", command=lambda: save(file.get(), save_alert)).pack(side=TOP)
+
+# main window elements
+
+pass_label = Label(window, text="Your password: ", font=("Bahnchrift", 10))
 pass_label.pack(side=BOTTOM)
 
-positions = ["START", "END"]
+positions = ["START", "END"] # for positions dropdown
 
 Label(window, text="Welcome to Random Password Generator!", font=("Verdana", 15)).pack(side=TOP)
 # Password length enter...
-Label(window, text="Password Length ( 7<x<31 ): ", font=("Bahnschrift", 17)).pack(side=TOP)
+Label(window, text="Password Length (minimum: 8, maximum: 30): ", font=("Bahnschrift", 17)).pack(side=TOP)
 # Enter here...
 
 length = IntVar()
@@ -125,5 +183,9 @@ st_option.pack_forget()
 # Generate button...
 button = Button(window, text="Generate", fg="green", command=lambda: passwordGen(length.get(), isc.get(), ist.get(), selected_position.get(), term.get()))
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
+
+# Save window button...
+save_button = Button(window, text="Save Window", fg="green", command=save_window.deiconify)
+save_button.pack(side=BOTTOM, anchor=CENTER, pady=20)
 
 window.mainloop()
