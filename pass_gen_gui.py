@@ -1,14 +1,6 @@
 from tkinter import *
 import string, random
-
-window = Tk()
-window.title("Random Password Generator")
-window.geometry("800x500")
-window.resizable(False, False)
-# window.configure(bg='lightblue')
-
-pass_label = Label(window, text="Your password: ", font=("Banhschrift", 10))
-pass_label.pack(side=BOTTOM)
+import json
 
 def istEntry():
     if ist.get() == True:
@@ -21,11 +13,19 @@ def istEntry():
         st_entry.pack_forget()
         st_text2.pack_forget()
         st_option.pack_forget()
+
+def copy_to_clipboard(final_pass):
+    window.clipboard_clear()
+    window.clipboard_append(final_pass)
+    window.update()
     
 def passwordGen(length, isc, ist, selected_position, term):
     # conditional code for "error" involving password lengths above 30
     if length > 30:
         pass_label.configure(text="Password length is greater than 30. Please choose another length.")
+        return
+    elif length <= 7:
+        pass_label.configure(text="Password length cannot be less than 8. Please choose another length.")
         return
     else:
         if ist and selected_position == "START": # include conditional statement for password length and term length comparison
@@ -43,6 +43,7 @@ def passwordGen(length, isc, ist, selected_position, term):
             #     return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
+            copy_to_clipboard(final_pass)
             return final_pass
         
         if ist and selected_position == "END":
@@ -53,11 +54,12 @@ def passwordGen(length, isc, ist, selected_position, term):
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
             
             final_pass = password + term
-            if len(final_pass) > length:
+            if len(term) > length:
                 pass_label.configure(text="Term length cannot be longer than password length.")
                 return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
+            copy_to_clipboard(final_pass)
             return final_pass
     
     # If there is no specific term, check for special chars...
@@ -66,15 +68,28 @@ def passwordGen(length, isc, ist, selected_position, term):
     else:
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     
-    pass_label.configure(text=("Your password: " + password))
+    pass_label.configure(text=("Your password: " + password + " | Copied to clipboard!"))
     print(password) # debug print
+    copy_to_clipboard(password)
     return password
+
+
+window = Tk()
+Label(window, text="By: Steven Lau, Paul Basile", font=("Bahnschrift", 7)).pack(side=TOP)
+
+window.title("Random Password Generator")
+window.geometry("800x500")
+window.resizable(False, False)
+# window.configure(bg='lightblue')
+
+pass_label = Label(window, text="Your password: ", font=("Banhschrift", 10))
+pass_label.pack(side=BOTTOM)
 
 positions = ["START", "END"]
 
 Label(window, text="Welcome to Random Password Generator!", font=("Verdana", 15)).pack(side=TOP)
 # Password length enter...
-Label(window, text="Password Length (up to 30): ", font=("Bahnschrift", 17)).pack(side=TOP)
+Label(window, text="Password Length ( 7<x<31 ): ", font=("Bahnschrift", 17)).pack(side=TOP)
 # Enter here...
 
 length = IntVar()
@@ -110,9 +125,5 @@ st_option.pack_forget()
 # Generate button...
 button = Button(window, text="Generate", fg="green", command=lambda: passwordGen(length.get(), isc.get(), ist.get(), selected_position.get(), term.get()))
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
-
-# Credits...
-
-Label(window, text="Credits: Steven Lau and Paul Basile", font=("Bahnschrift", 10)).pack(side=BOTTOM)
 
 window.mainloop()
