@@ -5,6 +5,10 @@ import json
 # global variables
 
 password_generated = False
+valid_length = False
+valid_term = False
+valid_input = False
+last_password = ""
 
 # functions
 
@@ -20,22 +24,41 @@ def istEntry():
         st_text2.pack_forget()
         st_option.pack_forget()
 
-def copy_to_clipboard(final_pass):
+def copy_to_clipboard(last_password):
     window.clipboard_clear()
-    window.clipboard_append(final_pass)
+    window.clipboard_append(last_password)
     window.update()
-    
+    if last_password != "":
+        pass_label.configure(text="Password has been copied to clipboard!")
+    else:
+        pass_label.configure(text="No password has been generated yet. Please generate a password before copying.")
+   
 def passwordGen(length, isc, ist, selected_position, term):
     global password_generated
+    global password
+    global final_pass
     global last_password
+    global valid_length
+    global valid_term
+    global valid_input
+    valid_length = False # reset validity checks
+    valid_term = False
+    valid_input = False
+    if length <= 30 and length >= 8:
+        valid_length = True
+    if len(term) <= length:
+        valid_term = True
+    if (valid_term==True) and (valid_length==True):
+        valid_input = True
     # conditional code for "error" involving password lengths above 30
-    if length > 30:
-        pass_label.configure(text="Password length is greater than 30. Please choose another length.")
+    if (valid_length==False):
+        pass_label.configure(text="Password length is less than 8 or greater than 30. Please choose another length.")
         return
-    elif length <= 7:
-        pass_label.configure(text="Password length cannot be less than 8. Please choose another length.")
+    elif (valid_term==False):
+    # elif length <= 7:
+        pass_label.configure(text="Term length cannot be longer than password length.")
         return
-    else:
+    elif (valid_input==True):
         if ist and selected_position == "START": # include conditional statement for password length and term length comparison
             length -= len(term)
             # If special chars...
@@ -44,7 +67,7 @@ def passwordGen(length, isc, ist, selected_position, term):
             # If no special chars...
             else:
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-            
+           
             final_pass = term + password
             last_password = final_pass
             # if len(final_pass) > length:
@@ -54,9 +77,9 @@ def passwordGen(length, isc, ist, selected_position, term):
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
                 password_generated = True
-            copy_to_clipboard(final_pass)
+            # copy_to_clipboard(final_pass)
             return final_pass
-        
+       
         if ist and selected_position == "END":
             length -= len(term)
             if isc:
@@ -65,7 +88,7 @@ def passwordGen(length, isc, ist, selected_position, term):
             else:
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
                 last_password = password
-            
+           
             final_pass = password + term
             last_password = final_pass
             if len(term) > length:
@@ -74,26 +97,26 @@ def passwordGen(length, isc, ist, selected_position, term):
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
-                password_generated = True            
-            copy_to_clipboard(final_pass)
+                password_generated = True        
+            # copy_to_clipboard(final_pass)
             return final_pass
-    
+   
     # If there is no specific term, check for special chars...
     if isc:
         password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
     else:
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-    
-    pass_label.configure(text=("Your password: " + password + " | Copied to clipboard!"))
+   
+    pass_label.configure(text=("Your password: " + password))
     if password:
-        password_generated = True
+        password_generated = True                
     print(password) # debug print
-    copy_to_clipboard(password)
+    # copy_to_clipboard(password)
     return password
 
 def save(file, save_alert):
     if (password_generated == True):
-        
+       
         data = {
             "length":length.get(),
             "included_special_characters":isc.get(),
@@ -109,6 +132,11 @@ def save(file, save_alert):
             save_alert.configure(text=f"Password has been saved to {path}.")
             save_alert.pack(side=BOTTOM)
             save_alert.after(5000, lambda: save_alert.destroy())
+    else:    
+        save_alert.configure(text="Password has not been generated yet.")
+        save_alert.pack(side=BOTTOM)
+        save_alert.after(5000, lambda: save_alert.destroy())
+
 
 # main window
 
@@ -124,7 +152,7 @@ window.resizable(False, False)
 
 save_window = Toplevel()
 save_window.title("Save")
-save_window.geometry("300x200")
+save_window.geometry("300x150")
 save_window.resizable(False,False)
 save_window.withdraw()
 save_window.protocol("WM_DELETE_WINDOW", save_window.withdraw)
@@ -132,8 +160,8 @@ save_window.protocol("WM_DELETE_WINDOW", save_window.withdraw)
 # save window elements
 
 file = StringVar()
-Label(save_window, text="Enter file name: ").pack(side=TOP)
-save_alert = Label(save_window, text="", font=("Bahnschrift", 7))
+Label(save_window, text="Enter file name: ", font=("Bahnschrift", 15)).pack(side=TOP)
+save_alert = Label(save_window, text="", font=("Bahnschrift", 7), fg="red")
 save_alert.pack(side=TOP)
 Entry(save_window, width=10, textvariable=file, font = ("Bahnschrift", 15)).pack(side=TOP)
 Button(save_window, text="Save", fg="aquamarine", command=lambda: save(file.get(), save_alert)).pack(side=TOP)
@@ -186,6 +214,9 @@ button.pack(side=BOTTOM, anchor=CENTER, pady=20)
 
 # Save window button...
 save_button = Button(window, text="Save Window", fg="green", command=save_window.deiconify)
-save_button.pack(side=BOTTOM, anchor=CENTER, pady=20)
+save_button.pack(side=BOTTOM, anchor=CENTER)
 
+# Copy to clipboard button...
+copy_button = Button(window, text="Copy Password to Clipboard", fg="green", command=lambda:copy_to_clipboard(last_password))
+copy_button.pack(side=BOTTOM, anchor=CENTER, pady=20)
 window.mainloop()
