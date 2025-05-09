@@ -84,14 +84,14 @@ def passwordGen(length, isc, ist, selected_position, term):
             length -= len(term)
             if isc:
                 password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
-                last_password = password
             else:
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-                last_password = password
            
             final_pass = password + term
             last_password = final_pass
-
+            # if len(term) > length:
+            #     pass_label.configure(text="Term length cannot be longer than password length.")
+            #     return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
@@ -205,7 +205,7 @@ st_entry.pack_forget()
 st_text2.pack_forget()
 st_option.pack_forget()
 
-
+a
 # Generate button...
 button = Button(window, text="Generate", fg="green", command=lambda: passwordGen(length.get(), isc.get(), ist.get(), selected_position.get(), term.get()))
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
