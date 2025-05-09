@@ -1,6 +1,7 @@
 import random
 import string
 from tkinter import *
+import json
 
 # create password based on user input 
 
@@ -32,6 +33,20 @@ def generator(length, isc, ist, position, specific_term):
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
     return password
 
+# save password to file
+
+def save(file):
+    data = {
+        "length":length,
+        "included_special_characters":isc,
+        "included_specific_terms":ist,
+        "position_of_term":position,
+        "specific_term":specific_term,
+        "password":generator(length, isc, ist, position, specific_term)
+    }
+    path = str(file) + ".json"
+    with open(path, 'w') as save_data:
+        json.dump(data, save_data, indent=4)
 
 while True:
     
@@ -82,7 +97,18 @@ while True:
         print("Invalid input. Enter Y or N. Restarting...")
         continue
     
-    
+    # SAVE PASSWORD
+
+    save_password = input("Save password to file? (Y/N): ").strip().upper()
+    if (save_password=="Y"):
+        file = input("Enter file name: ")
+        save(file)
+        print(f"File has been saved to {file}.json.")
+    elif (save_password=="N"):
+        print("Program completed execution.")
+    else:
+        print("Invalid input. Enter Y or N. Restarting...")
+
     # FINAL PASSWORD
     
     print("Password: ", generator(length, isc, ist, position, specific_term))
