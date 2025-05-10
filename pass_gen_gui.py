@@ -205,7 +205,7 @@ st_entry.pack_forget()
 st_text2.pack_forget()
 st_option.pack_forget()
 
-a
+
 # Generate button...
 button = Button(window, text="Generate", fg="green", command=lambda: passwordGen(length.get(), isc.get(), ist.get(), selected_position.get(), term.get()))
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
