@@ -1,5 +1,8 @@
 from tkinter import *
+
+from tkinter.filedialog import asksaveasfilename
 import string, random
+
 import json
 
 # global variables
@@ -70,14 +73,10 @@ def passwordGen(length, isc, ist, selected_position, term):
            
             final_pass = term + password
             last_password = final_pass
-            # if len(final_pass) > length:
-            #     pass_label.configure(text="Term length cannot be longer than password length.")
-            #     return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
                 password_generated = True
-            # copy_to_clipboard(final_pass)
             return final_pass
        
         if ist and selected_position == "END":
@@ -89,9 +88,6 @@ def passwordGen(length, isc, ist, selected_position, term):
            
             final_pass = password + term
             last_password = final_pass
-            # if len(term) > length:
-            #     pass_label.configure(text="Term length cannot be longer than password length.")
-            #     return
             print(final_pass) # debug print
             pass_label.configure(text=("Your password: " + final_pass))
             if final_pass:
@@ -104,17 +100,15 @@ def passwordGen(length, isc, ist, selected_position, term):
         password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length))
     else:
         password = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-   
+    last_password = password
     pass_label.configure(text=("Your password: " + password))
     if password:
         password_generated = True                
     print(password) # debug print
-    # copy_to_clipboard(password)
     return password
 
 def save(file, save_alert):
     if (password_generated == True):
-       
         data = {
             "length":length.get(),
             "included_special_characters":isc.get(),
@@ -123,18 +117,20 @@ def save(file, save_alert):
             "specific_term":term.get(),
             "password":str(last_password)
         }
-        path = str(file) + ".json"
-        with open(path, 'w') as save_data:
-            json.dump(data, save_data, indent=4)
-        if save_alert:
-            save_alert.configure(text=f"Password has been saved to {path}.")
-            save_alert.pack(side=BOTTOM)
-            save_alert.after(5000, lambda: save_alert.destroy())
-    else:    
-        save_alert.configure(text="Password has not been generated yet.")
-        save_alert.pack(side=BOTTOM)
-        save_alert.after(5000, lambda: save_alert.destroy())
-
+        path = asksaveasfilename(defaultextension=".json", filetypes=[("JSON files","*.json"), ("All files", "*.*")])
+        if path:
+            try:
+                with open(path, 'w') as file:
+                    json.dump(data, file, indent=4)
+                    save_alert.configure(text=f"Password has been saved to {path}.")
+            except Exception as e:
+                    save_alert.configure(text=f"Error saving file: {e}")
+            else:
+                    save_alert.configure(text="Save has been cancelled. No file has been created.")
+    else:
+        save_alert.configure(text="No password has been generated yet. Please generate a password before saving.")
+    save_alert.pack(side=BOTTOM)
+    save_alert.after(5000, lambda: save_alert.destroy())
 
 # main window
 
@@ -144,25 +140,6 @@ Label(window, text="By: Steven Lau and Paul Basile", font=("Bahnschrift", 7)).pa
 window.title("Random Password Generator")
 window.geometry("800x500")
 window.resizable(False, False)
-# window.configure(bg='lightblue')
-
-# save window
-
-save_window = Toplevel()
-save_window.title("Save")
-save_window.geometry("300x150")
-save_window.resizable(False,False)
-save_window.withdraw()
-save_window.protocol("WM_DELETE_WINDOW", save_window.withdraw)
-
-# save window elements
-
-file = StringVar()
-Label(save_window, text="Enter file name: ", font=("Bahnschrift", 15)).pack(side=TOP)
-save_alert = Label(save_window, text="", font=("Bahnschrift", 7), fg="red")
-save_alert.pack(side=TOP)
-Entry(save_window, width=10, textvariable=file, font = ("Bahnschrift", 15)).pack(side=TOP)
-Button(save_window, text="Save", fg="aquamarine", command=lambda: save(file.get(), save_alert)).pack(side=TOP)
 
 # main window elements
 
@@ -211,7 +188,9 @@ button = Button(window, text="Generate", fg="green", command=lambda: passwordGen
 button.pack(side=BOTTOM, anchor=CENTER, pady=20)
 
 # Save window button...
-save_button = Button(window, text="Save Window", fg="green", command=save_window.deiconify)
+file = StringVar()
+save_alert = Label(window, text="", font=("Bahnschrift", 7), fg="red")
+save_button = Button(window, text="Save", fg="green", command=lambda: save(file.get(), save_alert))
 save_button.pack(side=BOTTOM, anchor=CENTER)
 
 # Copy to clipboard button...
