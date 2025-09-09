@@ -14,3 +14,7 @@ Almost entirely bugfixed; needs read system (write system already implemented).
 - Password Manager (pass_manager_gui.py)
 
 Planning to use MySQL to securely store user-generated passwords into a database. May also use Windows authentication (local user) for additional security. If Windows authentication is not used, encryption shall be used in lieu of it.
+
+- Rock-Paper-Scissors/RNG Game Prototype (rps.py)
+
+Prototype for an RNG-based RPG; planning to eventually translate to Godot using similar code.
